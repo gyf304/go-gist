@@ -26,13 +26,13 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
 
-    - name: Build Linux x86-64
+    - name: Build
       env:
         GOARCH: ${{ matrix.goarch }}
         GOOS: ${{ matrix.goos }}
         CGO: 0
       run: |
         mkdir -p build/${GOOS}-${GOARCH}
-        go build -o ${GOOS}-${GOARCH}/gist .
+        go build -o build/${GOOS}-${GOARCH}/gist .
         tar czvf gist-${GOOS}-${GOARCH}.tar.gz -C build/${GOOS}-${GOARCH} gist
 
