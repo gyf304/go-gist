@@ -6,8 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   release:
-    types: # This configuration does not affect the page_build event above
-    - created
+    types: [ created ]
 
 jobs:
   build:
@@ -15,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: ["windows", "linux", "darwin"]
-        goarch: ["amd64", "386"]
+        goos: [ "windows", "linux", "darwin" ]
+        goarch: [ "amd64", "386" ]
         exclude:
         - goos: darwin
           goarch: "386"
@@ -64,3 +63,32 @@ jobs:
       with:
         name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
         path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        
+    - name: Get the upload URL release
+      if: github.event_name == 'release'
+      id: get_release
+      uses: bruceadams/get-release@v1.2.2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Upload Release Asset
+      if: github.event_name == 'release' && matrix.goos != 'windows'
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+        asset_name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+        asset_content_type: application/gzip
+  
+    - name: Upload Windows Release Asset
+      if: github.event_name == 'release' && matrix.goos == 'windows'
+      uses: actions/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        asset_name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        asset_content_type: application/zip
