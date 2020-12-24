@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  release:
+    types: # This configuration does not affect the page_build event above
+    - created
 
 jobs:
   build:
@@ -47,3 +50,17 @@ jobs:
         mkdir -p build/${GOOS}-${GOARCH}
         go build -o build/${GOOS}-${GOARCH}/gist.exe .
         zip -j gist-${GOOS}-${GOARCH}.zip build/${GOOS}-${GOARCH}/gist.exe
+        
+    - name: Upload Artifacts
+      if: matrix.goos != 'windows'
+      uses: actions/upload-artifact@v2.2.1
+      with:
+        name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+        path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+        
+    - name: Upload Windows Artifacts
+      if: matrix.goos == 'windows'
+      uses: actions/upload-artifact@v2.2.1
+      with:
+        name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
