@@ -15,8 +15,8 @@ jobs:
         goos: ["windows", "linux", "darwin"]
         goarch: ["amd64", "386"]
         exclude:
-        - os: darwin
-          arch: 386
+        - goos: darwin
+          goarch: "386"
     steps:
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
