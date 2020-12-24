@@ -37,12 +37,7 @@ type accessTokenResponse struct {
 }
 
 func loadToken() error {
-	usr, err := user.Current()
-	if err != nil {
-		return err
-	}
-	tokenPath := filepath.Join(usr.HomeDir, ".config", "go-gist", "token.txt")
-	token, err := ioutil.ReadFile(tokenPath)
+	token, err := ioutil.ReadFile(args.TokenPath)
 	if err != nil {
 		return err
 	}

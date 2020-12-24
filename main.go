@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path/filepath"
 
 	"github.com/alexflint/go-arg"
@@ -13,22 +14,26 @@ import (
 func init() {
 	args.GithubURL = "https://github.com"
 	args.ClientID = "0c01d146f93dfe836694"
-	loadToken()
+	usr, err := user.Current()
+	if err == nil {
+		args.TokenPath = filepath.Join(usr.HomeDir, ".config", "go-gist", "token.txt")
+	}
 }
 
 var args struct {
-	ClientID    string   `arg:"env:GITHUB_CLIENT_ID"`
-	GithubURL   string   `arg:"env:GITHUB_URL"`
-	AccessToken string   `arg:"env:GITHUB_ACCESS_TOKEN"`
-	Description string   `arg:"-d"`
-	FileNames   []string `arg:"-f,separate"`
+	ClientID    string   `arg:"--client-id,env:GITHUB_CLIENT_ID" help:"specify a custom GitHub OAuth client ID"`
+	GithubURL   string   `arg:"--github-url,env:GITHUB_URL" help:"specify a custom GitHub URL"`
+	AccessToken string   `arg:"--access-token,env:GITHUB_ACCESS_TOKEN" help:"specify a custom GitHub access token"`
+	Description string   `arg:"-d" help:"specify a description for gist"`
+	FileNames   []string `arg:"-f,separate" help:"specify filenames for gist"`
 	Files       []string `arg:"positional"`
-	Base64      bool     `arg:"--base64"`
-	Private     bool     `arg:"-p"`
-	Read        bool     `arg:"-r"`
-	Output      string   `arg:"-o"`
-	Login       bool     `arg:"-l"`
-	Timeout     int      `arg:"-t"`
+	Base64      bool     `arg:"--base64" help:"use base64, useful for binary files"`
+	Private     bool     `arg:"-p" help:"make gist private"`
+	Read        bool     `arg:"-r" help:"read a gist"`
+	Output      string   `arg:"-o" help:"specify a output file, only valid if [-r,--read] is specified"`
+	Login       bool     `arg:"-l" help:"force a login"`
+	Timeout     int      `arg:"-t" help:"specify a timeout for login, 0 or negative values disables timeout"`
+	TokenPath   string   `arg:"--token-path" help:"specify a path for storing / reading GitHub access token"`
 }
 
 func doPost() {
@@ -131,6 +136,7 @@ func doRead() {
 
 func main() {
 	arg.MustParse(&args)
+	loadToken()
 	// compile data
 	if args.Login {
 		args.AccessToken = ""
