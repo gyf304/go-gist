@@ -35,9 +35,9 @@ jobs:
         GOOS: ${{ matrix.goos }}
         CGO: 0
       run: |
-        mkdir -p build/${GOOS}-${GOARCH}
-        go build -o build/${GOOS}-${GOARCH}/gist .
-        tar czvf gist-${GOOS}-${GOARCH}.tar.gz -C build/${GOOS}-${GOARCH} gist
+        mkdir -p build/${GOOS}-${GOARCH}/gist
+        go build -o build/${GOOS}-${GOARCH}/gist/gist .
+        cd build/${GOOS}-${GOARCH} && tar czvf ../${GOOS}-${GOARCH}.tar.gz gist
         
     - name: Build Windows
       if: matrix.goos == 'windows'
@@ -46,23 +46,23 @@ jobs:
         GOOS: ${{ matrix.goos }}
         CGO: 0
       run: |
-        mkdir -p build/${GOOS}-${GOARCH}
-        go build -o build/${GOOS}-${GOARCH}/gist.exe .
-        zip -j gist-${GOOS}-${GOARCH}.zip build/${GOOS}-${GOARCH}/gist.exe
+        mkdir -p build/${GOOS}-${GOARCH}/gist
+        go build -o build/${GOOS}-${GOARCH}/gist/gist.exe .
+        cd build/${GOOS}-${GOARCH} && zip -r ../${GOOS}-${GOARCH}.zip gist
         
     - name: Upload Artifacts
       if: matrix.goos != 'windows'
       uses: actions/upload-artifact@v2.2.1
       with:
         name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
-        path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+        path: build/${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
         
     - name: Upload Windows Artifacts
       if: matrix.goos == 'windows'
       uses: actions/upload-artifact@v2.2.1
       with:
         name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-        path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        path: build/${{ matrix.goos }}-${{ matrix.goarch }}.zip
         
     - name: Get the upload URL release
       if: github.event_name == 'release'
@@ -78,7 +78,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+        asset_path: build/${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
         asset_name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
         asset_content_type: application/gzip
   
@@ -89,6 +89,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.get_release.outputs.upload_url }}
-        asset_path: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+        asset_path: build/${{ matrix.goos }}-${{ matrix.goarch }}.zip
         asset_name: gist-${{ matrix.goos }}-${{ matrix.goarch }}.zip
         asset_content_type: application/zip
