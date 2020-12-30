@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
@@ -14,6 +15,7 @@ import (
 func init() {
 	args.GithubURL = "https://github.com"
 	args.ClientID = "0c01d146f93dfe836694"
+	args.Format = "{{.ID}}\n"
 	usr, err := user.Current()
 	if err == nil {
 		args.TokenPath = filepath.Join(usr.HomeDir, ".config", "go-gist", "token.txt")
@@ -34,6 +36,7 @@ var args struct {
 	Login       bool     `arg:"-l" help:"force a login"`
 	Timeout     int      `arg:"-t" help:"specify a timeout for login, 0 or negative values disables timeout"`
 	TokenPath   string   `arg:"--token-path" help:"specify a path for storing / reading GitHub access token"`
+	Format      string   `arg:"--format"`
 }
 
 func doPost() {
@@ -76,7 +79,18 @@ func doPost() {
 		os.Exit(1)
 		return
 	}
-	fmt.Println(postResp.ID)
+	tmpl, err := template.New("").Parse(args.Format)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Cannot parse format template: %s\n", err)
+		os.Exit(1)
+		return
+	}
+	err = tmpl.Execute(os.Stdout, postResp)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Cannot execute template: %s\n", err)
+		os.Exit(1)
+		return
+	}
 }
 
 func doRead() {
