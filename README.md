@@ -5,7 +5,7 @@ Inspired by https://github.com/defunkt/gist
 
 ## Synopsis
 
-The gist gem provides a `gist` command that you can use from your terminal to
+This golang package provides a `gist` command that you can use from your terminal to
 upload content to https://gist.github.com/.
 
 ## Installation
